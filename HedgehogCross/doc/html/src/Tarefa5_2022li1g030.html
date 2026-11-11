@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">{- |
+Module      : Tarefa5_2022li1g030
+Description : Deslize do mapa
+Copyright   : Pedro
+
+M&#243;dulo para a realiza&#231;&#227;o da Tarefa 5 do projeto de LI1 em 2022/23.
+-}</span></span><span>
+</span><span id="line-8"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Tarefa5_2022li1g030.html"><span class="hs-identifier">Tarefa5_2022li1g030</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-9"></span><span>  </span><span class="annot"><a href="Tarefa5_2022li1g030.html#deslizaJogo"><span class="hs-identifier">deslizaJogo</span></a></span><span>
+</span><span id="line-10"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-11"></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LI12223.html"><span class="hs-identifier">LI12223</span></a></span><span>
+</span><span id="line-13"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="Tarefa2_2022li1g030.html"><span class="hs-identifier">Tarefa2_2022li1g030</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="Tarefa2_2022li1g030.html#estendeMapa"><span class="hs-identifier">estendeMapa</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-14"></span><span>
+</span><span id="line-15"></span><span class="annot"><span class="hs-comment">{- | Faz deslizar o jogo uma linha: &#233; acrescentada uma nova linha ao topo do
+mapa (gerada por 'estendeMapa' com a semente dada), a &#250;ltima linha &#233; removida
+e a ordenada do jogador aumenta 1 unidade, refletindo que ele ficou para tr&#225;s.
+
+O mapa mant&#233;m sempre o mesmo n&#250;mero de linhas. A nova linha &#233; gerada antes de
+remover a &#250;ltima, para que o mapa resultante continue a ser v&#225;lido.
+
+&gt;&gt;&gt; let Jogo j (Mapa l ls) = deslizaJogo 7 (Jogo (Jogador (1,1)) (Mapa 2 [(Relva,[Nenhum,Nenhum]),(Relva,[Nenhum,Arvore])]))
+&gt;&gt;&gt; (j, l, length ls, last ls)
+(Jogador (1,2),2,2,(Relva,[Nenhum,Nenhum]))
+-}</span></span><span>
+</span><span id="line-26"></span><span class="annot"><a href="Tarefa5_2022li1g030.html#deslizaJogo"><span class="hs-identifier hs-type">deslizaJogo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span>
+</span><span id="line-27"></span><span id="deslizaJogo"><span class="annot"><span class="annottext">deslizaJogo :: Int -&gt; Jogo -&gt; Jogo
+</span><a href="Tarefa5_2022li1g030.html#deslizaJogo"><span class="hs-identifier hs-var hs-var">deslizaJogo</span></a></span></span><span> </span><span id="local-6989586621679085810"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085810"><span class="hs-identifier hs-var">semente</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085813"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085813"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085814"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085814"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085815"><span class="annot"><span class="annottext">mapa :: Mapa
+</span><a href="#local-6989586621679085815"><span class="hs-identifier hs-var">mapa</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span id="local-6989586621679085817"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085817"><span class="hs-identifier hs-var">largura</span></a></span></span><span> </span><span id="local-6989586621679085818"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085818"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-28"></span><span>  </span><span class="annot"><span class="annottext">Jogador -&gt; Mapa -&gt; Jogo
+</span><a href="LI12223.html#Jogo"><span class="hs-identifier hs-var">Jogo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Int, Int) -&gt; Jogador
+</span><a href="LI12223.html#Jogador"><span class="hs-identifier hs-var">Jogador</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085813"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085814"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [(Terreno, [Obstaculo])] -&gt; Mapa
+</span><a href="LI12223.html#Mapa"><span class="hs-identifier hs-var">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085817"><span class="hs-identifier hs-var">largura</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [(Terreno, [Obstaculo])] -&gt; [(Terreno, [Obstaculo])]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085818"><span class="hs-identifier hs-var">linhas</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085822"><span class="hs-identifier hs-var">estendidas</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085822"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085822"><span class="hs-identifier hs-var">estendidas</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Int -&gt; Mapa
+</span><a href="Tarefa2_2022li1g030.html#estendeMapa"><span class="hs-identifier hs-var">estendeMapa</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085815"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085810"><span class="hs-identifier hs-var">semente</span></a></span><span>
+</span><span id="line-30"></span></pre></body></html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">{- |
+Module      : LI12223
+Description : M&#243;dulo auxiliar para LI1 22/23.
+Copyright   : Manuel Barros &lt;d13242@di.uminho.pt&gt;
+              Nelson Estev&#227;o &lt;d12733@di.uminho.pt&gt;
+              Olga Pacheco &lt;omp@di.uminho.pt&gt;
+              Xavier Pinho &lt;d12736@di.uminho.pt&gt;
+
+Tipos de dados e fun&#231;&#245;es auxiliares para a realiza&#231;&#227;o do projeto de LI1 em 2022/23.
+ -}</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="LI12223.html"><span class="hs-identifier">LI12223</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-12"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Tipos de dados</span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** B&#225;sicos</span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="annot"><a href="LI12223.html#Coordenadas"><span class="hs-identifier">Coordenadas</span></a></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Largura"><span class="hs-identifier">Largura</span></a></span><span> </span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Velocidade"><span class="hs-identifier">Velocidade</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>  </span><span class="annot"><span class="hs-comment">-- ** Mapas</span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier">Mapa</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier">Terreno</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier">Obstaculo</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>    </span><span class="annot"><span class="hs-comment">-- ** Jogo</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier">Jogo</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier">Jogador</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Direcao"><span class="hs-identifier">Direcao</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Jogada"><span class="hs-identifier">Jogada</span></a></span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-20"></span><span>
+</span><span id="line-21"></span><span class="annot"><span class="hs-comment">-- | Velocidade que ir&#225; afetar a movimenta&#231;&#227;o dos 'Obstaculo's de um 'Mapa'.</span></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">type</span><span> </span><span id="Velocidade"><span class="annot"><a href="LI12223.html#Velocidade"><span class="hs-identifier hs-var">Velocidade</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">{- | Cada linha de um 'Mapa' &#233; um Terreno em particular contendo 'Obstaculo's.
+
+As linhas do tipo 'Rio' ou 'Estrada' t&#234;m a propriedade 'Velocidade' que indicam a velocidade de deslocamento dos obst&#225;culos. Podendo esta ser negativa, indicando assim a sua dire&#231;&#227;o.
+-}</span></span><span>
+</span><span id="line-28"></span><span class="hs-keyword">data</span><span> </span><span id="Terreno"><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-var">Terreno</span></a></span></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Rio"><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-var">Rio</span></a></span></span><span> </span><span class="annot"><a href="LI12223.html#Velocidade"><span class="hs-identifier hs-type">Velocidade</span></a></span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Estrada"><span class="annot"><a href="LI12223.html#Estrada"><span class="hs-identifier hs-var">Estrada</span></a></span></span><span> </span><span class="annot"><a href="LI12223.html#Velocidade"><span class="hs-identifier hs-type">Velocidade</span></a></span><span>
+</span><span id="line-31"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Relva"><span class="annot"><a href="LI12223.html#Relva"><span class="hs-identifier hs-var">Relva</span></a></span></span><span>
+</span><span id="line-32"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084876"><span id="local-6989586621679084884"><span id="local-6989586621679084888"><span class="annot"><span class="annottext">Int -&gt; Terreno -&gt; ShowS
+[Terreno] -&gt; ShowS
+Terreno -&gt; String
+(Int -&gt; Terreno -&gt; ShowS)
+-&gt; (Terreno -&gt; String) -&gt; ([Terreno] -&gt; ShowS) -&gt; Show Terreno
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Terreno -&gt; ShowS
+showsPrec :: Int -&gt; Terreno -&gt; ShowS
+$cshow :: Terreno -&gt; String
+show :: Terreno -&gt; String
+$cshowList :: [Terreno] -&gt; ShowS
+showList :: [Terreno] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084893"><span id="local-6989586621679084897"><span id="local-6989586621679084900"><span id="local-6989586621679084914"><span class="annot"><span class="annottext">ReadPrec [Terreno]
+ReadPrec Terreno
+Int -&gt; ReadS Terreno
+ReadS [Terreno]
+(Int -&gt; ReadS Terreno)
+-&gt; ReadS [Terreno]
+-&gt; ReadPrec Terreno
+-&gt; ReadPrec [Terreno]
+-&gt; Read Terreno
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Terreno
+readsPrec :: Int -&gt; ReadS Terreno
+$creadList :: ReadS [Terreno]
+readList :: ReadS [Terreno]
+$creadPrec :: ReadPrec Terreno
+readPrec :: ReadPrec Terreno
+$creadListPrec :: ReadPrec [Terreno]
+readListPrec :: ReadPrec [Terreno]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084921"><span id="local-6989586621679084929"><span class="annot"><span class="annottext">Terreno -&gt; Terreno -&gt; Bool
+(Terreno -&gt; Terreno -&gt; Bool)
+-&gt; (Terreno -&gt; Terreno -&gt; Bool) -&gt; Eq Terreno
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Terreno -&gt; Terreno -&gt; Bool
+== :: Terreno -&gt; Terreno -&gt; Bool
+$c/= :: Terreno -&gt; Terreno -&gt; Bool
+/= :: Terreno -&gt; Terreno -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-33"></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Um Obst&#225;culo numa linha de um 'Mapa'.</span></span><span>
+</span><span id="line-35"></span><span class="hs-keyword">data</span><span> </span><span id="Obstaculo"><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-var">Obstaculo</span></a></span></span><span>
+</span><span id="line-36"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Nenhum"><span class="annot"><a href="LI12223.html#Nenhum"><span class="hs-identifier hs-var">Nenhum</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ a aus&#234;ncia de obst&#225;culos</span></span><span>
+</span><span id="line-37"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Tronco"><span class="annot"><a href="LI12223.html#Tronco"><span class="hs-identifier hs-var">Tronco</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ os troncos deslizam apenas em 'Rio'</span></span><span>
+</span><span id="line-38"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Carro"><span class="annot"><a href="LI12223.html#Carro"><span class="hs-identifier hs-var">Carro</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ os carros movimentam-se apenas em 'Estrada'</span></span><span>
+</span><span id="line-39"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Arvore"><span class="annot"><a href="LI12223.html#Arvore"><span class="hs-identifier hs-var">Arvore</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ as &#225;rvores s&#227;o um obst&#225;culo fixo que n&#227;o se move e apenas s&#227;o poss&#237;veis em 'Relva'</span></span><span>
+</span><span id="line-40"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084938"><span id="local-6989586621679084940"><span id="local-6989586621679084944"><span class="annot"><span class="annottext">Int -&gt; Obstaculo -&gt; ShowS
+[Obstaculo] -&gt; ShowS
+Obstaculo -&gt; String
+(Int -&gt; Obstaculo -&gt; ShowS)
+-&gt; (Obstaculo -&gt; String)
+-&gt; ([Obstaculo] -&gt; ShowS)
+-&gt; Show Obstaculo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Obstaculo -&gt; ShowS
+showsPrec :: Int -&gt; Obstaculo -&gt; ShowS
+$cshow :: Obstaculo -&gt; String
+show :: Obstaculo -&gt; String
+$cshowList :: [Obstaculo] -&gt; ShowS
+showList :: [Obstaculo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084947"><span id="local-6989586621679084951"><span id="local-6989586621679084954"><span id="local-6989586621679084960"><span class="annot"><span class="annottext">ReadPrec [Obstaculo]
+ReadPrec Obstaculo
+Int -&gt; ReadS Obstaculo
+ReadS [Obstaculo]
+(Int -&gt; ReadS Obstaculo)
+-&gt; ReadS [Obstaculo]
+-&gt; ReadPrec Obstaculo
+-&gt; ReadPrec [Obstaculo]
+-&gt; Read Obstaculo
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Obstaculo
+readsPrec :: Int -&gt; ReadS Obstaculo
+$creadList :: ReadS [Obstaculo]
+readList :: ReadS [Obstaculo]
+$creadPrec :: ReadPrec Obstaculo
+readPrec :: ReadPrec Obstaculo
+$creadListPrec :: ReadPrec [Obstaculo]
+readListPrec :: ReadPrec [Obstaculo]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084963"><span id="local-6989586621679084967"><span class="annot"><span class="annottext">Obstaculo -&gt; Obstaculo -&gt; Bool
+(Obstaculo -&gt; Obstaculo -&gt; Bool)
+-&gt; (Obstaculo -&gt; Obstaculo -&gt; Bool) -&gt; Eq Obstaculo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Obstaculo -&gt; Obstaculo -&gt; Bool
+== :: Obstaculo -&gt; Obstaculo -&gt; Bool
+$c/= :: Obstaculo -&gt; Obstaculo -&gt; Bool
+/= :: Obstaculo -&gt; Obstaculo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-41"></span><span>
+</span><span id="line-42"></span><span class="annot"><span class="hs-comment">-- | Comprimento de um 'Mapa'.</span></span><span>
+</span><span id="line-43"></span><span class="hs-keyword">type</span><span> </span><span id="Largura"><span class="annot"><a href="LI12223.html#Largura"><span class="hs-identifier hs-var">Largura</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-44"></span><span>
+</span><span id="line-45"></span><span class="annot"><span class="hs-comment">-- | O Mapa que constitu&#237; o 'Jogo'.</span></span><span>
+</span><span id="line-46"></span><span class="hs-keyword">data</span><span> </span><span id="Mapa"><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-var">Mapa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-47"></span><span>  </span><span id="Mapa"><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-var">Mapa</span></a></span></span><span> </span><span class="annot"><a href="LI12223.html#Largura"><span class="hs-identifier hs-type">Largura</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084972"><span id="local-6989586621679084979"><span id="local-6989586621679084983"><span class="annot"><span class="annottext">Int -&gt; Mapa -&gt; ShowS
+[Mapa] -&gt; ShowS
+Mapa -&gt; String
+(Int -&gt; Mapa -&gt; ShowS)
+-&gt; (Mapa -&gt; String) -&gt; ([Mapa] -&gt; ShowS) -&gt; Show Mapa
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Mapa -&gt; ShowS
+showsPrec :: Int -&gt; Mapa -&gt; ShowS
+$cshow :: Mapa -&gt; String
+show :: Mapa -&gt; String
+$cshowList :: [Mapa] -&gt; ShowS
+showList :: [Mapa] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084990"><span id="local-6989586621679084994"><span id="local-6989586621679084997"><span id="local-6989586621679085007"><span class="annot"><span class="annottext">ReadPrec [Mapa]
+ReadPrec Mapa
+Int -&gt; ReadS Mapa
+ReadS [Mapa]
+(Int -&gt; ReadS Mapa)
+-&gt; ReadS [Mapa] -&gt; ReadPrec Mapa -&gt; ReadPrec [Mapa] -&gt; Read Mapa
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Mapa
+readsPrec :: Int -&gt; ReadS Mapa
+$creadList :: ReadS [Mapa]
+readList :: ReadS [Mapa]
+$creadPrec :: ReadPrec Mapa
+readPrec :: ReadPrec Mapa
+$creadListPrec :: ReadPrec [Mapa]
+readListPrec :: ReadPrec [Mapa]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085014"><span id="local-6989586621679085020"><span class="annot"><span class="annottext">Mapa -&gt; Mapa -&gt; Bool
+(Mapa -&gt; Mapa -&gt; Bool) -&gt; (Mapa -&gt; Mapa -&gt; Bool) -&gt; Eq Mapa
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Mapa -&gt; Mapa -&gt; Bool
+== :: Mapa -&gt; Mapa -&gt; Bool
+$c/= :: Mapa -&gt; Mapa -&gt; Bool
+/= :: Mapa -&gt; Mapa -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-49"></span><span>
+</span><span id="line-50"></span><span class="annot"><span class="hs-comment">-- | Par de coordenadas de uma posi&#231;&#227;o no 'Mapa'.</span></span><span>
+</span><span id="line-51"></span><span class="hs-keyword">type</span><span> </span><span id="Coordenadas"><span class="annot"><a href="LI12223.html#Coordenadas"><span class="hs-identifier hs-var">Coordenadas</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><span class="hs-comment">-- | O Jogador define o personagem controlado no 'Jogo'.</span></span><span>
+</span><span id="line-54"></span><span class="hs-keyword">newtype</span><span> </span><span id="Jogador"><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-var">Jogador</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-55"></span><span>  </span><span id="Jogador"><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-var">Jogador</span></a></span></span><span> </span><span class="annot"><a href="LI12223.html#Coordenadas"><span class="hs-identifier hs-type">Coordenadas</span></a></span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085029"><span id="local-6989586621679085035"><span id="local-6989586621679085039"><span class="annot"><span class="annottext">Int -&gt; Jogador -&gt; ShowS
+[Jogador] -&gt; ShowS
+Jogador -&gt; String
+(Int -&gt; Jogador -&gt; ShowS)
+-&gt; (Jogador -&gt; String) -&gt; ([Jogador] -&gt; ShowS) -&gt; Show Jogador
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Jogador -&gt; ShowS
+showsPrec :: Int -&gt; Jogador -&gt; ShowS
+$cshow :: Jogador -&gt; String
+show :: Jogador -&gt; String
+$cshowList :: [Jogador] -&gt; ShowS
+showList :: [Jogador] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085042"><span id="local-6989586621679085046"><span id="local-6989586621679085049"><span id="local-6989586621679085057"><span class="annot"><span class="annottext">ReadPrec [Jogador]
+ReadPrec Jogador
+Int -&gt; ReadS Jogador
+ReadS [Jogador]
+(Int -&gt; ReadS Jogador)
+-&gt; ReadS [Jogador]
+-&gt; ReadPrec Jogador
+-&gt; ReadPrec [Jogador]
+-&gt; Read Jogador
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Jogador
+readsPrec :: Int -&gt; ReadS Jogador
+$creadList :: ReadS [Jogador]
+readList :: ReadS [Jogador]
+$creadPrec :: ReadPrec Jogador
+readPrec :: ReadPrec Jogador
+$creadListPrec :: ReadPrec [Jogador]
+readListPrec :: ReadPrec [Jogador]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085060"><span id="local-6989586621679085066"><span class="annot"><span class="annottext">Jogador -&gt; Jogador -&gt; Bool
+(Jogador -&gt; Jogador -&gt; Bool)
+-&gt; (Jogador -&gt; Jogador -&gt; Bool) -&gt; Eq Jogador
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Jogador -&gt; Jogador -&gt; Bool
+== :: Jogador -&gt; Jogador -&gt; Bool
+$c/= :: Jogador -&gt; Jogador -&gt; Bool
+/= :: Jogador -&gt; Jogador -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-57"></span><span>
+</span><span id="line-58"></span><span class="annot"><span class="hs-comment">-- | Defini&#231;&#227;o base de um jogo.</span></span><span>
+</span><span id="line-59"></span><span class="hs-keyword">data</span><span> </span><span id="Jogo"><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-var">Jogo</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-60"></span><span>  </span><span id="Jogo"><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-var">Jogo</span></a></span></span><span>
+</span><span id="line-61"></span><span>    </span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ o personagem do jogo</span></span><span>
+</span><span id="line-62"></span><span>    </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ o mapa em que se est&#225; a jogar</span></span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085074"><span id="local-6989586621679085079"><span id="local-6989586621679085083"><span class="annot"><span class="annottext">Int -&gt; Jogo -&gt; ShowS
+[Jogo] -&gt; ShowS
+Jogo -&gt; String
+(Int -&gt; Jogo -&gt; ShowS)
+-&gt; (Jogo -&gt; String) -&gt; ([Jogo] -&gt; ShowS) -&gt; Show Jogo
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Jogo -&gt; ShowS
+showsPrec :: Int -&gt; Jogo -&gt; ShowS
+$cshow :: Jogo -&gt; String
+show :: Jogo -&gt; String
+$cshowList :: [Jogo] -&gt; ShowS
+showList :: [Jogo] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085086"><span id="local-6989586621679085090"><span id="local-6989586621679085093"><span id="local-6989586621679085101"><span class="annot"><span class="annottext">ReadPrec [Jogo]
+ReadPrec Jogo
+Int -&gt; ReadS Jogo
+ReadS [Jogo]
+(Int -&gt; ReadS Jogo)
+-&gt; ReadS [Jogo] -&gt; ReadPrec Jogo -&gt; ReadPrec [Jogo] -&gt; Read Jogo
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Jogo
+readsPrec :: Int -&gt; ReadS Jogo
+$creadList :: ReadS [Jogo]
+readList :: ReadS [Jogo]
+$creadPrec :: ReadPrec Jogo
+readPrec :: ReadPrec Jogo
+$creadListPrec :: ReadPrec [Jogo]
+readListPrec :: ReadPrec [Jogo]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085104"><span id="local-6989586621679085108"><span class="annot"><span class="annottext">Jogo -&gt; Jogo -&gt; Bool
+(Jogo -&gt; Jogo -&gt; Bool) -&gt; (Jogo -&gt; Jogo -&gt; Bool) -&gt; Eq Jogo
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Jogo -&gt; Jogo -&gt; Bool
+== :: Jogo -&gt; Jogo -&gt; Bool
+$c/= :: Jogo -&gt; Jogo -&gt; Bool
+/= :: Jogo -&gt; Jogo -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-64"></span><span>
+</span><span id="line-65"></span><span class="annot"><span class="hs-comment">-- | Dire&#231;&#227;o de uma 'Jogada' feita por um 'Jogador' no 'Mapa'.</span></span><span>
+</span><span id="line-66"></span><span class="hs-keyword">data</span><span> </span><span id="Direcao"><span class="annot"><a href="LI12223.html#Direcao"><span class="hs-identifier hs-var">Direcao</span></a></span></span><span>
+</span><span id="line-67"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Cima"><span class="annot"><a href="LI12223.html#Cima"><span class="hs-identifier hs-var">Cima</span></a></span></span><span>
+</span><span id="line-68"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Baixo"><span class="annot"><a href="LI12223.html#Baixo"><span class="hs-identifier hs-var">Baixo</span></a></span></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Esquerda"><span class="annot"><a href="LI12223.html#Esquerda"><span class="hs-identifier hs-var">Esquerda</span></a></span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Direita"><span class="annot"><a href="LI12223.html#Direita"><span class="hs-identifier hs-var">Direita</span></a></span></span><span>
+</span><span id="line-71"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085116"><span id="local-6989586621679085118"><span id="local-6989586621679085122"><span class="annot"><span class="annottext">Int -&gt; Direcao -&gt; ShowS
+[Direcao] -&gt; ShowS
+Direcao -&gt; String
+(Int -&gt; Direcao -&gt; ShowS)
+-&gt; (Direcao -&gt; String) -&gt; ([Direcao] -&gt; ShowS) -&gt; Show Direcao
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Direcao -&gt; ShowS
+showsPrec :: Int -&gt; Direcao -&gt; ShowS
+$cshow :: Direcao -&gt; String
+show :: Direcao -&gt; String
+$cshowList :: [Direcao] -&gt; ShowS
+showList :: [Direcao] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085125"><span id="local-6989586621679085129"><span id="local-6989586621679085132"><span id="local-6989586621679085138"><span class="annot"><span class="annottext">ReadPrec [Direcao]
+ReadPrec Direcao
+Int -&gt; ReadS Direcao
+ReadS [Direcao]
+(Int -&gt; ReadS Direcao)
+-&gt; ReadS [Direcao]
+-&gt; ReadPrec Direcao
+-&gt; ReadPrec [Direcao]
+-&gt; Read Direcao
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Direcao
+readsPrec :: Int -&gt; ReadS Direcao
+$creadList :: ReadS [Direcao]
+readList :: ReadS [Direcao]
+$creadPrec :: ReadPrec Direcao
+readPrec :: ReadPrec Direcao
+$creadListPrec :: ReadPrec [Direcao]
+readListPrec :: ReadPrec [Direcao]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085141"><span id="local-6989586621679085145"><span class="annot"><span class="annottext">Direcao -&gt; Direcao -&gt; Bool
+(Direcao -&gt; Direcao -&gt; Bool)
+-&gt; (Direcao -&gt; Direcao -&gt; Bool) -&gt; Eq Direcao
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Direcao -&gt; Direcao -&gt; Bool
+== :: Direcao -&gt; Direcao -&gt; Bool
+$c/= :: Direcao -&gt; Direcao -&gt; Bool
+/= :: Direcao -&gt; Direcao -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-72"></span><span>
+</span><span id="line-73"></span><span class="annot"><span class="hs-comment">-- | As ac&#231;&#245;es que podem ser tomadas pelo 'Jogador' em cada estado do 'Jogo'.</span></span><span>
+</span><span id="line-74"></span><span class="hs-keyword">data</span><span> </span><span id="Jogada"><span class="annot"><a href="LI12223.html#Jogada"><span class="hs-identifier hs-var">Jogada</span></a></span></span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-glyph">=</span><span> </span><span id="Parado"><span class="annot"><a href="LI12223.html#Parado"><span class="hs-identifier hs-var">Parado</span></a></span></span><span> </span><span class="annot"><span class="hs-comment">-- ^ tipo que define a aus&#234;ncia de uma ac&#231;&#227;o do 'Jogador'</span></span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span id="Move"><span class="annot"><a href="LI12223.html#Move"><span class="hs-identifier hs-var">Move</span></a></span></span><span> </span><span class="annot"><a href="LI12223.html#Direcao"><span class="hs-identifier hs-type">Direcao</span></a></span><span> </span><span class="annot"><span class="hs-comment">-- ^ um movimento do jogador numa determinada 'Direcao'</span></span><span>
+</span><span id="line-77"></span><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085151"><span id="local-6989586621679085155"><span id="local-6989586621679085159"><span class="annot"><span class="annottext">Int -&gt; Jogada -&gt; ShowS
+[Jogada] -&gt; ShowS
+Jogada -&gt; String
+(Int -&gt; Jogada -&gt; ShowS)
+-&gt; (Jogada -&gt; String) -&gt; ([Jogada] -&gt; ShowS) -&gt; Show Jogada
+forall a.
+(Int -&gt; a -&gt; ShowS) -&gt; (a -&gt; String) -&gt; ([a] -&gt; ShowS) -&gt; Show a
+$cshowsPrec :: Int -&gt; Jogada -&gt; ShowS
+showsPrec :: Int -&gt; Jogada -&gt; ShowS
+$cshow :: Jogada -&gt; String
+show :: Jogada -&gt; String
+$cshowList :: [Jogada] -&gt; ShowS
+showList :: [Jogada] -&gt; ShowS
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Show</span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085162"><span id="local-6989586621679085166"><span id="local-6989586621679085169"><span id="local-6989586621679085177"><span class="annot"><span class="annottext">ReadPrec [Jogada]
+ReadPrec Jogada
+Int -&gt; ReadS Jogada
+ReadS [Jogada]
+(Int -&gt; ReadS Jogada)
+-&gt; ReadS [Jogada]
+-&gt; ReadPrec Jogada
+-&gt; ReadPrec [Jogada]
+-&gt; Read Jogada
+forall a.
+(Int -&gt; ReadS a)
+-&gt; ReadS [a] -&gt; ReadPrec a -&gt; ReadPrec [a] -&gt; Read a
+$creadsPrec :: Int -&gt; ReadS Jogada
+readsPrec :: Int -&gt; ReadS Jogada
+$creadList :: ReadS [Jogada]
+readList :: ReadS [Jogada]
+$creadPrec :: ReadPrec Jogada
+readPrec :: ReadPrec Jogada
+$creadListPrec :: ReadPrec [Jogada]
+readListPrec :: ReadPrec [Jogada]
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">Read</span></span></span></span></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085180"><span id="local-6989586621679085185"><span class="annot"><span class="annottext">Jogada -&gt; Jogada -&gt; Bool
+(Jogada -&gt; Jogada -&gt; Bool)
+-&gt; (Jogada -&gt; Jogada -&gt; Bool) -&gt; Eq Jogada
+forall a. (a -&gt; a -&gt; Bool) -&gt; (a -&gt; a -&gt; Bool) -&gt; Eq a
+$c== :: Jogada -&gt; Jogada -&gt; Bool
+== :: Jogada -&gt; Jogada -&gt; Bool
+$c/= :: Jogada -&gt; Jogada -&gt; Bool
+/= :: Jogada -&gt; Jogada -&gt; Bool
+</span><span class="hs-identifier hs-var hs-var hs-var hs-var hs-var hs-var">Eq</span></span></span></span><span class="hs-special">)</span><span>
+</span><span id="line-78"></span></pre></body></html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">{- |
+Module      : Tarefa3_2022li1g030
+Description : Movimenta&#231;&#227;o do personagem e obst&#225;culos
+Copyright   : Pedro
+
+M&#243;dulo para a realiza&#231;&#227;o da Tarefa 3 do projeto de LI1 em 2022/23.
+
+A fun&#231;&#227;o 'animaJogo' calcula o estado seguinte de um jogo: primeiro move o
+jogador, de acordo com a jogada, e depois move os obst&#225;culos de cada linha, de
+acordo com a velocidade do terreno. Segue as regras do enunciado da Fase 1 e
+os esclarecimentos da adenda da Fase 2 (atropelamentos e movimentos em cima
+de troncos).
+-}</span></span><span>
+</span><span id="line-14"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Tarefa3_2022li1g030.html"><span class="hs-identifier">Tarefa3_2022li1g030</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-15"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Fun&#231;&#227;o principal</span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaJogo"><span class="hs-identifier">animaJogo</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Movimento do jogador</span></span><span>
+</span><span id="line-18"></span><span>  </span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaJogador"><span class="hs-identifier">animaJogador</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa3_2022li1g030.html#celula"><span class="hs-identifier">celula</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier">posicaoLivre</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-19"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Movimento dos obst&#225;culos</span></span><span>
+</span><span id="line-20"></span><span>  </span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaLinha"><span class="hs-identifier">animaLinha</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier">roda</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa3_2022li1g030.html#moveCarros"><span class="hs-identifier">moveCarros</span></a></span><span>
+</span><span id="line-21"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-22"></span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LI12223.html"><span class="hs-identifier">LI12223</span></a></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">{- | Anima um jogo: move o jogador segundo a jogada dada e, em seguida, os
+obst&#225;culos de todas as linhas. As dimens&#245;es do mapa nunca se alteram.
+
+&gt;&gt;&gt; animaJogo (Jogo (Jogador (1,0)) (Mapa 3 [(Estrada 2, [Carro, Nenhum, Nenhum])])) Parado
+Jogo (Jogador (1,0)) (Mapa 3 [(Estrada 2,[Nenhum,Carro,Nenhum])])
+-}</span></span><span>
+</span><span id="line-31"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaJogo"><span class="hs-identifier hs-type">animaJogo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogada"><span class="hs-identifier hs-type">Jogada</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span>
+</span><span id="line-32"></span><span id="animaJogo"><span class="annot"><span class="annottext">animaJogo :: Jogo -&gt; Jogada -&gt; Jogo
+</span><a href="Tarefa3_2022li1g030.html#animaJogo"><span class="hs-identifier hs-var hs-var">animaJogo</span></a></span></span><span> </span><span id="local-6989586621679085668"><span class="annot"><span class="annottext">jogo :: Jogo
+</span><a href="#local-6989586621679085668"><span class="hs-identifier hs-var">jogo</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="annot"><span class="annottext">Jogador
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span id="local-6989586621679085671"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085671"><span class="hs-identifier hs-var">largura</span></a></span></span><span> </span><span id="local-6989586621679085672"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085672"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085673"><span class="annot"><span class="annottext">Jogada
+</span><a href="#local-6989586621679085673"><span class="hs-identifier hs-var">jogada</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-33"></span><span>  </span><span class="annot"><span class="annottext">Jogador -&gt; Mapa -&gt; Jogo
+</span><a href="LI12223.html#Jogo"><span class="hs-identifier hs-var">Jogo</span></a></span><span> </span><span class="annot"><span class="annottext">Jogador
+</span><a href="#local-6989586621679085674"><span class="hs-identifier hs-var">jogador</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [(Terreno, [Obstaculo])] -&gt; Mapa
+</span><a href="LI12223.html#Mapa"><span class="hs-identifier hs-var">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085671"><span class="hs-identifier hs-var">largura</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Int -&gt; (Terreno, [Obstaculo]) -&gt; (Terreno, [Obstaculo]))
+-&gt; [Int] -&gt; [(Terreno, [Obstaculo])] -&gt; [(Terreno, [Obstaculo])]
+forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
+</span><span class="hs-identifier hs-var">zipWith</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Jogador -&gt; Int -&gt; (Terreno, [Obstaculo]) -&gt; (Terreno, [Obstaculo])
+</span><a href="Tarefa3_2022li1g030.html#animaLinha"><span class="hs-identifier hs-var">animaLinha</span></a></span><span> </span><span class="annot"><span class="annottext">Jogador
+</span><a href="#local-6989586621679085674"><span class="hs-identifier hs-var">jogador</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085672"><span class="hs-identifier hs-var">linhas</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-34"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679085674"><span class="annot"><span class="annottext">jogador :: Jogador
+</span><a href="#local-6989586621679085674"><span class="hs-identifier hs-var hs-var">jogador</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Jogo -&gt; Jogada -&gt; Jogador
+</span><a href="Tarefa3_2022li1g030.html#animaJogador"><span class="hs-identifier hs-var">animaJogador</span></a></span><span> </span><span class="annot"><span class="annottext">Jogo
+</span><a href="#local-6989586621679085668"><span class="hs-identifier hs-var">jogo</span></a></span><span> </span><span class="annot"><span class="annottext">Jogada
+</span><a href="#local-6989586621679085673"><span class="hs-identifier hs-var">jogada</span></a></span><span>
+</span><span id="line-35"></span><span>
+</span><span id="line-36"></span><span class="annot"><span class="hs-comment">{- | Calcula a nova posi&#231;&#227;o do jogador.
+
+* Fora de um tronco, o jogador move-se 1 unidade na dire&#231;&#227;o pedida, exceto se
+  isso o levasse para fora do mapa ou para cima de uma &#225;rvore.
+* Em cima de um tronco, um movimento vertical leva o jogador diretamente para
+  a linha de cima ou de baixo, sem acompanhar o tronco.
+* Em cima de um tronco, um movimento horizontal equivale a mover primeiro o
+  tronco e depois o jogador.
+* Se o jogador ficar parado (ou se o seu movimento for impedido) em cima de um
+  tronco, acompanha o movimento do tronco, podendo assim sair do mapa.
+-}</span></span><span>
+</span><span id="line-47"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaJogador"><span class="hs-identifier hs-type">animaJogador</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogada"><span class="hs-identifier hs-type">Jogada</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span>
+</span><span id="line-48"></span><span id="animaJogador"><span class="annot"><span class="annottext">animaJogador :: Jogo -&gt; Jogada -&gt; Jogador
+</span><a href="Tarefa3_2022li1g030.html#animaJogador"><span class="hs-identifier hs-var hs-var">animaJogador</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogo"><span class="hs-identifier hs-type">Jogo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085677"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085678"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085679"><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span></span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085680"><span class="annot"><span class="annottext">Jogada
+</span><a href="#local-6989586621679085680"><span class="hs-identifier hs-var">jogada</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Int, Int) -&gt; Jogador
+</span><a href="LI12223.html#Jogador"><span class="hs-identifier hs-var">Jogador</span></a></span><span> </span><span class="annot"><span class="annottext">((Int, Int) -&gt; Jogador) -&gt; (Int, Int) -&gt; Jogador
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Jogada
+</span><a href="#local-6989586621679085680"><span class="hs-identifier hs-var">jogada</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-49"></span><span>  </span><span class="annot"><a href="LI12223.html#Move"><span class="hs-identifier hs-type">Move</span></a></span><span> </span><span class="annot"><span class="annottext">Direcao
+</span><a href="LI12223.html#Cima"><span class="hs-identifier hs-var">Cima</span></a></span><span>     </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Bool
+</span><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-var">posicaoLivre</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-50"></span><span>  </span><span class="annot"><a href="LI12223.html#Move"><span class="hs-identifier hs-type">Move</span></a></span><span> </span><span class="annot"><span class="annottext">Direcao
+</span><a href="LI12223.html#Baixo"><span class="hs-identifier hs-var">Baixo</span></a></span><span>    </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Bool
+</span><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-var">posicaoLivre</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span>
+</span><span id="line-51"></span><span>  </span><span class="annot"><a href="LI12223.html#Move"><span class="hs-identifier hs-type">Move</span></a></span><span> </span><span class="annot"><span class="annottext">Direcao
+</span><a href="LI12223.html#Esquerda"><span class="hs-identifier hs-var">Esquerda</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679085686"><span class="hs-identifier hs-var">noTronco</span></a></span><span>                     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085687"><span class="hs-identifier hs-var">arrasto</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Bool
+</span><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-var">posicaoLivre</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-53"></span><span>  </span><span class="annot"><a href="LI12223.html#Move"><span class="hs-identifier hs-type">Move</span></a></span><span> </span><span class="annot"><span class="annottext">Direcao
+</span><a href="LI12223.html#Direita"><span class="hs-identifier hs-var">Direita</span></a></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679085686"><span class="hs-identifier hs-var">noTronco</span></a></span><span>                     </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085687"><span class="hs-identifier hs-var">arrasto</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-54"></span><span>                </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Bool
+</span><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-var">posicaoLivre</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-55"></span><span>  </span><span class="annot"><span class="annottext">Jogada
+</span><span class="hs-identifier">_</span></span><span>                                            </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085687"><span class="hs-identifier hs-var">arrasto</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-56"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-57"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679085686"><span class="annot"><span class="annottext">Bool
+</span><a href="#local-6989586621679085686"><span class="hs-identifier hs-var">noTronco</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085687"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085687"><span class="hs-identifier hs-var">arrasto</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Maybe (Terreno, Obstaculo)
+</span><a href="Tarefa3_2022li1g030.html#celula"><span class="hs-identifier hs-var">celula</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085679"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085677"><span class="hs-identifier hs-var">x</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085678"><span class="hs-identifier hs-var">y</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-58"></span><span>      </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span id="local-6989586621679085691"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085691"><span class="hs-identifier hs-var">v</span></a></span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Tronco"><span class="hs-identifier hs-var">Tronco</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085691"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-59"></span><span>      </span><span class="annot"><span class="annottext">Maybe (Terreno, Obstaculo)
+</span><span class="hs-identifier">_</span></span><span>                    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span class="hs-special">)</span><span>
+</span><span id="line-60"></span><span>
+</span><span id="line-61"></span><span class="annot"><span class="hs-comment">{- | O terreno e o obst&#225;culo existentes numa posi&#231;&#227;o do mapa, ou 'Nothing' se a
+posi&#231;&#227;o estiver fora do mapa.
+
+&gt;&gt;&gt; celula (Mapa 2 [(Relva, [Nenhum, Arvore])]) (1, 0)
+Just (Relva,Arvore)
+-}</span></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#celula"><span class="hs-identifier hs-type">celula</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Coordenadas"><span class="hs-identifier hs-type">Coordenadas</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span id="celula"><span class="annot"><span class="annottext">celula :: Mapa -&gt; (Int, Int) -&gt; Maybe (Terreno, Obstaculo)
+</span><a href="Tarefa3_2022li1g030.html#celula"><span class="hs-identifier hs-var hs-var">celula</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span id="local-6989586621679085694"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085694"><span class="hs-identifier hs-var">largura</span></a></span></span><span> </span><span id="local-6989586621679085695"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085695"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085696"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085696"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085697"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085697"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085696"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085696"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085694"><span class="hs-identifier hs-var">largura</span></a></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">||</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085697"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe (Terreno, Obstaculo)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-70"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [(Terreno, [Obstaculo])] -&gt; [(Terreno, [Obstaculo])]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085697"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085695"><span class="hs-identifier hs-var">linhas</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-71"></span><span>      </span><span class="hs-special">(</span><span id="local-6989586621679085701"><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085701"><span class="hs-identifier hs-var">terreno</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085702"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085702"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085696"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085702"><span class="hs-identifier hs-var">obstaculos</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-72"></span><span>        </span><span id="local-6989586621679085703"><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085703"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">(Terreno, Obstaculo) -&gt; Maybe (Terreno, Obstaculo)
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085701"><span class="hs-identifier hs-var">terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085703"><span class="hs-identifier hs-var">o</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-73"></span><span>        </span><span class="hs-special">[</span><span class="hs-special">]</span><span>    </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Terreno, Obstaculo)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-74"></span><span>      </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Maybe (Terreno, Obstaculo)
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-75"></span><span>
+</span><span id="line-76"></span><span class="annot"><span class="hs-comment">-- | Indica se o jogador se pode mover para uma posi&#231;&#227;o: tem de pertencer ao mapa e n&#227;o ter uma &#225;rvore.</span></span><span>
+</span><span id="line-77"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-type">posicaoLivre</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Coordenadas"><span class="hs-identifier hs-type">Coordenadas</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-78"></span><span id="posicaoLivre"><span class="annot"><span class="annottext">posicaoLivre :: Mapa -&gt; (Int, Int) -&gt; Bool
+</span><a href="Tarefa3_2022li1g030.html#posicaoLivre"><span class="hs-identifier hs-var hs-var">posicaoLivre</span></a></span></span><span> </span><span id="local-6989586621679085704"><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085704"><span class="hs-identifier hs-var">mapa</span></a></span></span><span> </span><span id="local-6989586621679085705"><span class="annot"><span class="annottext">(Int, Int)
+</span><a href="#local-6989586621679085705"><span class="hs-identifier hs-var">posicao</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; (Int, Int) -&gt; Maybe (Terreno, Obstaculo)
+</span><a href="Tarefa3_2022li1g030.html#celula"><span class="hs-identifier hs-var">celula</span></a></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085704"><span class="hs-identifier hs-var">mapa</span></a></span><span> </span><span class="annot"><span class="annottext">(Int, Int)
+</span><a href="#local-6989586621679085705"><span class="hs-identifier hs-var">posicao</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-79"></span><span>  </span><span class="annot"><span class="annottext">Maybe (Terreno, Obstaculo)
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>          </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-80"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Arvore"><span class="hs-identifier hs-var">Arvore</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-81"></span><span>  </span><span class="annot"><span class="hs-identifier hs-type">Just</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, Obstaculo)
+</span><span class="hs-identifier">_</span></span><span>           </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-82"></span><span>
+</span><span id="line-83"></span><span class="annot"><span class="hs-comment">{- | Move os obst&#225;culos de uma linha, sabendo a posi&#231;&#227;o (j&#225; atualizada) do
+jogador e o &#237;ndice da linha.
+
+Os rios e as estradas rodam os seus obst&#225;culos tantas unidades quanto a sua
+velocidade. A exce&#231;&#227;o &#233; a estrada onde o jogador se encontra: a&#237; os carros
+avan&#231;am uma unidade de cada vez e param no momento em que o atropelam
+('moveCarros').
+-}</span></span><span>
+</span><span id="line-91"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#animaLinha"><span class="hs-identifier hs-type">animaLinha</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span id="animaLinha"><span class="annot"><span class="annottext">animaLinha :: Jogador -&gt; Int -&gt; (Terreno, [Obstaculo]) -&gt; (Terreno, [Obstaculo])
+</span><a href="Tarefa3_2022li1g030.html#animaLinha"><span class="hs-identifier hs-var hs-var">animaLinha</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Jogador"><span class="hs-identifier hs-type">Jogador</span></a></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085707"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085707"><span class="hs-identifier hs-var">x</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085708"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085708"><span class="hs-identifier hs-var">y</span></a></span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span id="local-6989586621679085709"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085709"><span class="hs-identifier hs-var">indice</span></a></span></span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085710"><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085711"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085711"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span id="local-6989586621679085712"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085712"><span class="hs-identifier hs-var">v</span></a></span></span><span>                   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-var">roda</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085712"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085711"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-94"></span><span>  </span><span class="annot"><a href="LI12223.html#Estrada"><span class="hs-identifier hs-type">Estrada</span></a></span><span> </span><span id="local-6989586621679085714"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085714"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085709"><span class="hs-identifier hs-var">indice</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085708"><span class="hs-identifier hs-var">y</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+</span><a href="Tarefa3_2022li1g030.html#moveCarros"><span class="hs-identifier hs-var">moveCarros</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085707"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085714"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085711"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-95"></span><span>            </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span>   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-var">roda</span></a></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085714"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085711"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-96"></span><span>  </span><span class="annot"><span class="annottext">Terreno
+</span><a href="LI12223.html#Relva"><span class="hs-identifier hs-var">Relva</span></a></span><span>                   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085710"><span class="hs-identifier hs-var">terreno</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085711"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-97"></span><span>
+</span><span id="line-98"></span><span class="annot"><span class="hs-comment">{- | Roda uma lista de forma circular: para a direita se o n&#250;mero for positivo
+e para a esquerda se for negativo. Os elementos que saem por um lado
+reaparecem no lado oposto.
+
+&gt;&gt;&gt; roda 1 [Carro, Nenhum, Nenhum]
+[Nenhum,Carro,Nenhum]
+&gt;&gt;&gt; roda (-1) [Carro, Nenhum, Nenhum]
+[Nenhum,Nenhum,Carro]
+-}</span></span><span>
+</span><span id="line-107"></span><span id="local-6989586621679085716"><span class="annot"><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-type">roda</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679085716"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="#local-6989586621679085716"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">]</span></span><span>
+</span><span id="line-108"></span><span id="roda"><span class="annot"><span class="annottext">roda :: forall a. Int -&gt; [a] -&gt; [a]
+</span><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-var hs-var">roda</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-identifier">_</span></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>
+</span><span id="line-109"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-var">roda</span></a></span><span> </span><span id="local-6989586621679085717"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085717"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621679085718"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085718"><span class="hs-identifier hs-var">lista</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085719"><span class="hs-identifier hs-var">fim</span></a></span><span> </span><span class="annot"><span class="annottext">[a] -&gt; [a] -&gt; [a]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085720"><span class="hs-identifier hs-var">inicio</span></a></span><span>
+</span><span id="line-110"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-111"></span><span>    </span><span id="local-6989586621679085723"><span class="annot"><span class="annottext">n :: Int
+</span><a href="#local-6989586621679085723"><span class="hs-identifier hs-var hs-var">n</span></a></span></span><span>             </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[a] -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085718"><span class="hs-identifier hs-var">lista</span></a></span><span>
+</span><span id="line-112"></span><span>    </span><span class="hs-special">(</span><span id="local-6989586621679085720"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085720"><span class="hs-identifier hs-var">inicio</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085719"><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085719"><span class="hs-identifier hs-var">fim</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [a] -&gt; ([a], [a])
+forall a. Int -&gt; [a] -&gt; ([a], [a])
+</span><span class="hs-identifier hs-var">splitAt</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085723"><span class="hs-identifier hs-var">n</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085717"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Integral a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">`mod`</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085723"><span class="hs-identifier hs-var">n</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[a]
+</span><a href="#local-6989586621679085718"><span class="hs-identifier hs-var">lista</span></a></span><span>
+</span><span id="line-113"></span><span>
+</span><span id="line-114"></span><span class="annot"><span class="hs-comment">{- | Move os carros da estrada onde est&#225; o jogador, dada a abcissa do jogador e
+a velocidade da estrada.
+
+Os carros avan&#231;am uma unidade de cada vez. Se, em algum momento (incluindo
+antes do primeiro passo), houver um carro na posi&#231;&#227;o do jogador, o movimento
+de toda a linha &#233; interrompido.
+
+&gt;&gt;&gt; moveCarros 3 3 [Carro, Nenhum, Carro, Nenhum, Nenhum, Nenhum]
+[Nenhum,Carro,Nenhum,Carro,Nenhum,Nenhum]
+-}</span></span><span>
+</span><span id="line-124"></span><span class="annot"><a href="Tarefa3_2022li1g030.html#moveCarros"><span class="hs-identifier hs-type">moveCarros</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Velocidade"><span class="hs-identifier hs-type">Velocidade</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-125"></span><span id="moveCarros"><span class="annot"><span class="annottext">moveCarros :: Int -&gt; Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+</span><a href="Tarefa3_2022li1g030.html#moveCarros"><span class="hs-identifier hs-var hs-var">moveCarros</span></a></span></span><span> </span><span id="local-6989586621679085731"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085731"><span class="hs-identifier hs-var">x</span></a></span></span><span> </span><span id="local-6989586621679085732"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085732"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+</span><a href="#local-6989586621679085733"><span class="hs-identifier hs-var">passos</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">abs</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085732"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-126"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-127"></span><span>    </span><span class="annot"><a href="#local-6989586621679085733"><span class="hs-identifier hs-type">passos</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-128"></span><span>    </span><span id="local-6989586621679085733"><span class="annot"><span class="annottext">passos :: Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+</span><a href="#local-6989586621679085733"><span class="hs-identifier hs-var hs-var">passos</span></a></span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span id="local-6989586621679085735"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085735"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085735"><span class="hs-identifier hs-var">obstaculos</span></a></span><span>
+</span><span id="line-129"></span><span>    </span><span class="annot"><a href="#local-6989586621679085733"><span class="hs-identifier hs-var">passos</span></a></span><span> </span><span id="local-6989586621679085736"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085736"><span class="hs-identifier hs-var">k</span></a></span></span><span> </span><span id="local-6989586621679085737"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085737"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span>
+</span><span id="line-130"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; Bool
+</span><a href="#local-6989586621679085738"><span class="hs-identifier hs-var">atropelado</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085737"><span class="hs-identifier hs-var">obstaculos</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085737"><span class="hs-identifier hs-var">obstaculos</span></a></span><span>
+</span><span id="line-131"></span><span>      </span><span class="hs-glyph">|</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">otherwise</span></span><span>             </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+</span><a href="#local-6989586621679085733"><span class="hs-identifier hs-var">passos</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085736"><span class="hs-identifier hs-var">k</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><a href="Tarefa3_2022li1g030.html#roda"><span class="hs-identifier hs-var">roda</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">signum</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085732"><span class="hs-identifier hs-var">v</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085737"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-132"></span><span>    </span><span id="local-6989586621679085738"><span class="annot"><span class="annottext">atropelado :: [Obstaculo] -&gt; Bool
+</span><a href="#local-6989586621679085738"><span class="hs-identifier hs-var hs-var">atropelado</span></a></span></span><span> </span><span id="local-6989586621679085746"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085746"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085731"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Bool -&gt; Bool -&gt; Bool
+</span><span class="hs-operator hs-var">&amp;&amp;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">take</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. Int -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679085731"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085746"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; [Obstaculo] -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Carro"><span class="hs-identifier hs-var">Carro</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-133"></span></pre></body></html>

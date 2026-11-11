@@ -1,0 +1,667 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">{- |
+Module      : Fonte
+Description : Texto desenhado com um tipo de letra de p&#237;xeis
+Copyright   : Pedro
+
+O texto vetorial do Gloss n&#227;o permite saber a largura de uma frase, o que
+impede de a centrar. Este m&#243;dulo define um pequeno tipo de letra de p&#237;xeis
+(5 por 7), em que cada car&#225;cter &#233; desenhado com ret&#226;ngulos e todas as letras
+t&#234;m a mesma largura. Suporta letras mai&#250;sculas, algarismos e alguma pontua&#231;&#227;o.
+-}</span></span><span>
+</span><span id="line-11"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Fonte.html"><span class="hs-identifier">Fonte</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-12"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Desenhar texto</span></span><span>
+</span><span id="line-13"></span><span>  </span><span class="annot"><a href="Fonte.html#textoEsquerda"><span class="hs-identifier">textoEsquerda</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Fonte.html#textoCentrado"><span class="hs-identifier">textoCentrado</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Fonte.html#textoDireita"><span class="hs-identifier">textoDireita</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Fonte.html#comSombra"><span class="hs-identifier">comSombra</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-14"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Medidas</span></span><span>
+</span><span id="line-15"></span><span>  </span><span class="annot"><a href="Fonte.html#larguraTexto"><span class="hs-identifier">larguraTexto</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Fonte.html#alturaTexto"><span class="hs-identifier">alturaTexto</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-16"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Caracteres</span></span><span>
+</span><span id="line-17"></span><span>  </span><span class="annot"><a href="Fonte.html#glifo"><span class="hs-identifier">glifo</span></a></span><span>
+</span><span id="line-18"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-19"></span><span>
+</span><span id="line-20"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.Char</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">toUpper</span></span><span class="hs-special">)</span><span>
+</span><span id="line-21"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">group</span></span><span class="hs-special">)</span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-1.13.2.2-20ca20b507e8f0458b5648c65aa143aef24e080f0a375c54b8badcf04837b4d5/share/doc/html/src/Graphics.Gloss.html"><span class="hs-identifier">Graphics.Gloss</span></a></span><span>
+</span><span id="line-23"></span><span>
+</span><span id="line-24"></span><span class="annot"><span class="hs-comment">{- | Desenha um texto que come&#231;a na origem e se estende para a direita. O
+primeiro argumento &#233; o tamanho de cada p&#237;xel do tipo de letra.
+-}</span></span><span>
+</span><span id="line-27"></span><span class="annot"><a href="Fonte.html#textoEsquerda"><span class="hs-identifier hs-type">textoEsquerda</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span>
+</span><span id="line-28"></span><span id="textoEsquerda"><span class="annot"><span class="annottext">textoEsquerda :: Float -&gt; String -&gt; Picture
+</span><a href="Fonte.html#textoEsquerda"><span class="hs-identifier hs-var hs-var">textoEsquerda</span></a></span></span><span> </span><span id="local-6989586621679084783"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084783"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span id="local-6989586621679084784"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084784"><span class="hs-identifier hs-var">frase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Picture] -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Pictures"><span class="hs-identifier hs-var">Pictures</span></a></span><span>
+</span><span id="line-29"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Translate"><span class="hs-identifier hs-var">Translate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084783"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">6</span></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084788"><span class="hs-identifier hs-var">i</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; [String] -&gt; Picture
+</span><a href="Fonte.html#desenhaGlifo"><span class="hs-identifier hs-var">desenhaGlifo</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084783"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; [String]
+</span><a href="Fonte.html#glifo"><span class="hs-identifier hs-var">glifo</span></a></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679084790"><span class="hs-identifier hs-var">c</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-30"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084788"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084788"><span class="hs-identifier hs-var">i</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084790"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679084790"><span class="hs-identifier hs-var">c</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; String -&gt; [(Int, Char)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084784"><span class="hs-identifier hs-var">frase</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679084790"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">' '</span></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-31"></span><span>
+</span><span id="line-32"></span><span class="annot"><span class="hs-comment">-- | Desenha um texto centrado, na horizontal e na vertical, na origem.</span></span><span>
+</span><span id="line-33"></span><span class="annot"><a href="Fonte.html#textoCentrado"><span class="hs-identifier hs-type">textoCentrado</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span>
+</span><span id="line-34"></span><span id="textoCentrado"><span class="annot"><span class="annottext">textoCentrado :: Float -&gt; String -&gt; Picture
+</span><a href="Fonte.html#textoCentrado"><span class="hs-identifier hs-var hs-var">textoCentrado</span></a></span></span><span> </span><span id="local-6989586621679084792"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084792"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span id="local-6989586621679084793"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084793"><span class="hs-identifier hs-var">frase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-35"></span><span>  </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Translate"><span class="hs-identifier hs-var">Translate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; String -&gt; Float
+</span><a href="Fonte.html#larguraTexto"><span class="hs-identifier hs-var">larguraTexto</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084792"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084793"><span class="hs-identifier hs-var">frase</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float
+</span><a href="Fonte.html#alturaTexto"><span class="hs-identifier hs-var">alturaTexto</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084792"><span class="hs-identifier hs-var">px</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Fractional a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">/</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">2</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; String -&gt; Picture
+</span><a href="Fonte.html#textoEsquerda"><span class="hs-identifier hs-var">textoEsquerda</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084792"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084793"><span class="hs-identifier hs-var">frase</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-36"></span><span>
+</span><span id="line-37"></span><span class="annot"><span class="hs-comment">-- | Desenha um texto que termina na origem.</span></span><span>
+</span><span id="line-38"></span><span class="annot"><a href="Fonte.html#textoDireita"><span class="hs-identifier hs-type">textoDireita</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span>
+</span><span id="line-39"></span><span id="textoDireita"><span class="annot"><span class="annottext">textoDireita :: Float -&gt; String -&gt; Picture
+</span><a href="Fonte.html#textoDireita"><span class="hs-identifier hs-var hs-var">textoDireita</span></a></span></span><span> </span><span id="local-6989586621679084795"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084795"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span id="local-6989586621679084796"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084796"><span class="hs-identifier hs-var">frase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Translate"><span class="hs-identifier hs-var">Translate</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; String -&gt; Float
+</span><a href="Fonte.html#larguraTexto"><span class="hs-identifier hs-var">larguraTexto</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084795"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084796"><span class="hs-identifier hs-var">frase</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; String -&gt; Picture
+</span><a href="Fonte.html#textoEsquerda"><span class="hs-identifier hs-var">textoEsquerda</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084795"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084796"><span class="hs-identifier hs-var">frase</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-40"></span><span>
+</span><span id="line-41"></span><span class="annot"><span class="hs-comment">{- | Pinta uma imagem com a cor dada, por cima de uma c&#243;pia escura ligeiramente
+deslocada que lhe serve de sombra. O primeiro argumento &#233; o deslocamento.
+-}</span></span><span>
+</span><span id="line-44"></span><span class="annot"><a href="Fonte.html#comSombra"><span class="hs-identifier hs-type">comSombra</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Color.html#Color"><span class="hs-identifier hs-type">Color</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span>
+</span><span id="line-45"></span><span id="comSombra"><span class="annot"><span class="annottext">comSombra :: Float -&gt; Color -&gt; Picture -&gt; Picture
+</span><a href="Fonte.html#comSombra"><span class="hs-identifier hs-var hs-var">comSombra</span></a></span></span><span> </span><span id="local-6989586621679084797"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084797"><span class="hs-identifier hs-var">d</span></a></span></span><span> </span><span id="local-6989586621679084798"><span class="annot"><span class="annottext">Color
+</span><a href="#local-6989586621679084798"><span class="hs-identifier hs-var">cor</span></a></span></span><span> </span><span id="local-6989586621679084799"><span class="annot"><span class="annottext">Picture
+</span><a href="#local-6989586621679084799"><span class="hs-identifier hs-var">imagem</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Picture] -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Pictures"><span class="hs-identifier hs-var">Pictures</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Translate"><span class="hs-identifier hs-var">Translate</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084797"><span class="hs-identifier hs-var">d</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">negate</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084797"><span class="hs-identifier hs-var">d</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Color -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Color"><span class="hs-identifier hs-var">Color</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float -&gt; Float -&gt; Color
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Color.html#makeColor"><span class="hs-identifier hs-var">makeColor</span></a></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">0.6</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Picture
+</span><a href="#local-6989586621679084799"><span class="hs-identifier hs-var">imagem</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Color -&gt; Picture -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Color"><span class="hs-identifier hs-var">Color</span></a></span><span> </span><span class="annot"><span class="annottext">Color
+</span><a href="#local-6989586621679084798"><span class="hs-identifier hs-var">cor</span></a></span><span> </span><span class="annot"><span class="annottext">Picture
+</span><a href="#local-6989586621679084799"><span class="hs-identifier hs-var">imagem</span></a></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-48"></span><span>
+</span><span id="line-49"></span><span class="annot"><span class="hs-comment">-- | Largura de um texto, para um dado tamanho de p&#237;xel.</span></span><span>
+</span><span id="line-50"></span><span class="annot"><a href="Fonte.html#larguraTexto"><span class="hs-identifier hs-type">larguraTexto</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-51"></span><span id="larguraTexto"><span class="annot"><span class="annottext">larguraTexto :: Float -&gt; String -&gt; Float
+</span><a href="Fonte.html#larguraTexto"><span class="hs-identifier hs-var hs-var">larguraTexto</span></a></span></span><span> </span><span id="local-6989586621679084802"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084802"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span id="local-6989586621679084803"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084803"><span class="hs-identifier hs-var">frase</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084802"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Ord a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">max</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">6</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084803"><span class="hs-identifier hs-var">frase</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">1</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-52"></span><span>
+</span><span id="line-53"></span><span class="annot"><span class="hs-comment">-- | Altura de um texto, para um dado tamanho de p&#237;xel.</span></span><span>
+</span><span id="line-54"></span><span class="annot"><a href="Fonte.html#alturaTexto"><span class="hs-identifier hs-type">alturaTexto</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span>
+</span><span id="line-55"></span><span id="alturaTexto"><span class="annot"><span class="annottext">alturaTexto :: Float -&gt; Float
+</span><a href="Fonte.html#alturaTexto"><span class="hs-identifier hs-var hs-var">alturaTexto</span></a></span></span><span> </span><span id="local-6989586621679084806"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084806"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><span class="hs-number">7</span></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084806"><span class="hs-identifier hs-var">px</span></a></span><span>
+</span><span id="line-56"></span><span>
+</span><span id="line-57"></span><span class="annot"><span class="hs-comment">{- | Desenha um car&#225;cter. Em cada linha, os p&#237;xeis seguidos s&#227;o fundidos num
+&#250;nico ret&#226;ngulo, para reduzir o n&#250;mero de pol&#237;gonos.
+-}</span></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Fonte.html#desenhaGlifo"><span class="hs-identifier hs-type">desenhaGlifo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Float</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Picture"><span class="hs-identifier hs-type">Picture</span></a></span><span>
+</span><span id="line-61"></span><span id="desenhaGlifo"><span class="annot"><span class="annottext">desenhaGlifo :: Float -&gt; [String] -&gt; Picture
+</span><a href="Fonte.html#desenhaGlifo"><span class="hs-identifier hs-var hs-var">desenhaGlifo</span></a></span></span><span> </span><span id="local-6989586621679084807"><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084807"><span class="hs-identifier hs-var">px</span></a></span></span><span> </span><span id="local-6989586621679084808"><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679084808"><span class="hs-identifier hs-var">linhas</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Picture] -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Pictures"><span class="hs-identifier hs-var">Pictures</span></a></span><span>
+</span><span id="line-62"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Path -&gt; Picture
+</span><a href="file:///home/sk1w4lker/.local/state/cabal/store/ghc-9.10.3-inplace/gloss-rendering-1.13.2.1-a43a47c2bf3bc7447d1ffff894766c587df5e5cb5a1fdb44ca76842b344d5fb7/share/doc/html/src/Graphics.Gloss.Internals.Data.Picture.html#Polygon"><span class="hs-identifier hs-var">Polygon</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084810"><span class="hs-identifier hs-var">x0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084811"><span class="hs-identifier hs-var">y0</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084812"><span class="hs-identifier hs-var">x1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084811"><span class="hs-identifier hs-var">y0</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084812"><span class="hs-identifier hs-var">x1</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084813"><span class="hs-identifier hs-var">y1</span></a></span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084810"><span class="hs-identifier hs-var">x0</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084813"><span class="hs-identifier hs-var">y1</span></a></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-63"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084814"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084814"><span class="hs-identifier hs-var">l</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084815"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084815"><span class="hs-identifier hs-var">linha</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; [String] -&gt; [(Int, String)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span> </span><span class="hs-glyph">..</span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679084808"><span class="hs-identifier hs-var">linhas</span></a></span><span>
+</span><span id="line-64"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084816"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084816"><span class="hs-identifier hs-var">inicio</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084817"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084817"><span class="hs-identifier hs-var">comprimento</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">String -&gt; [(Int, Int)]
+</span><a href="Fonte.html#segmentos"><span class="hs-identifier hs-var">segmentos</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084815"><span class="hs-identifier hs-var">linha</span></a></span><span>
+</span><span id="line-65"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="hs-keyword">let</span><span> </span><span id="local-6989586621679084810"><span class="annot"><span class="annottext">x0 :: Float
+</span><a href="#local-6989586621679084810"><span class="hs-identifier hs-var hs-var">x0</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084807"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084816"><span class="hs-identifier hs-var">inicio</span></a></span><span>
+</span><span id="line-66"></span><span>        </span><span id="local-6989586621679084812"><span class="annot"><span class="annottext">x1 :: Float
+</span><a href="#local-6989586621679084812"><span class="hs-identifier hs-var hs-var">x1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084807"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084816"><span class="hs-identifier hs-var">inicio</span></a></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">+</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084817"><span class="hs-identifier hs-var">comprimento</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-67"></span><span>        </span><span id="local-6989586621679084813"><span class="annot"><span class="annottext">y1 :: Float
+</span><a href="#local-6989586621679084813"><span class="hs-identifier hs-var hs-var">y1</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084807"><span class="hs-identifier hs-var">px</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Float
+forall a b. (Integral a, Num b) =&gt; a -&gt; b
+</span><span class="hs-identifier hs-var">fromIntegral</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">7</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084814"><span class="hs-identifier hs-var">l</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-68"></span><span>        </span><span id="local-6989586621679084811"><span class="annot"><span class="annottext">y0 :: Float
+</span><a href="#local-6989586621679084811"><span class="hs-identifier hs-var hs-var">y0</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084813"><span class="hs-identifier hs-var">y1</span></a></span><span> </span><span class="annot"><span class="annottext">Float -&gt; Float -&gt; Float
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-glyph hs-var">-</span></span><span> </span><span class="annot"><span class="annottext">Float
+</span><a href="#local-6989586621679084807"><span class="hs-identifier hs-var">px</span></a></span><span>
+</span><span id="line-69"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-70"></span><span>
+</span><span id="line-71"></span><span class="annot"><span class="hs-comment">-- | Posi&#231;&#227;o inicial e comprimento de cada sequ&#234;ncia de p&#237;xeis acesos de uma linha.</span></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Fonte.html#segmentos"><span class="hs-identifier hs-type">segmentos</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span class="hs-special">)</span><span class="hs-special">]</span><span>
+</span><span id="line-73"></span><span id="segmentos"><span class="annot"><span class="annottext">segmentos :: String -&gt; [(Int, Int)]
+</span><a href="Fonte.html#segmentos"><span class="hs-identifier hs-var hs-var">segmentos</span></a></span></span><span> </span><span id="local-6989586621679084833"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084833"><span class="hs-identifier hs-var">linha</span></a></span></span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084834"><span class="hs-identifier hs-var">inicio</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084835"><span class="hs-identifier hs-var">grupo</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-75"></span><span>  </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679084834"><span class="annot"><span class="annottext">Int
+</span><a href="#local-6989586621679084834"><span class="hs-identifier hs-var">inicio</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679084835"><span class="annot"><span class="annottext">grupo :: String
+</span><a href="#local-6989586621679084835"><span class="hs-identifier hs-var">grupo</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'#'</span></span><span> </span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Int] -&gt; [String] -&gt; [(Int, String)]
+forall a b. [a] -&gt; [b] -&gt; [(a, b)]
+</span><span class="hs-identifier hs-var">zip</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Int -&gt; Int -&gt; Int) -&gt; Int -&gt; [Int] -&gt; [Int]
+forall b a. (b -&gt; a -&gt; b) -&gt; b -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">scanl</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Int -&gt; Int
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">(+)</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">0</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(String -&gt; Int) -&gt; [String] -&gt; [Int]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">String -&gt; Int
+forall a. [a] -&gt; Int
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Int
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679084837"><span class="hs-identifier hs-var">grupos</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[String]
+</span><a href="#local-6989586621679084837"><span class="hs-identifier hs-var">grupos</span></a></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-76"></span><span>  </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679084837"><span class="annot"><span class="annottext">grupos :: [String]
+</span><a href="#local-6989586621679084837"><span class="hs-identifier hs-var hs-var">grupos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">String -&gt; [String]
+forall a. Eq a =&gt; [a] -&gt; [[a]]
+</span><span class="hs-identifier hs-var">group</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679084833"><span class="hs-identifier hs-var">linha</span></a></span><span>
+</span><span id="line-77"></span><span>
+</span><span id="line-78"></span><span class="annot"><span class="hs-comment">{- | O desenho de um car&#225;cter: 7 linhas de 5 colunas, em que @#@ representa um
+p&#237;xel aceso. As min&#250;sculas s&#227;o desenhadas como mai&#250;sculas e os caracteres
+desconhecidos ficam em branco.
+-}</span></span><span>
+</span><span id="line-82"></span><span class="annot"><a href="Fonte.html#glifo"><span class="hs-identifier hs-type">glifo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Char</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span class="hs-special">]</span><span>
+</span><span id="line-83"></span><span id="glifo"><span class="annot"><span class="annottext">glifo :: Char -&gt; [String]
+</span><a href="Fonte.html#glifo"><span class="hs-identifier hs-var hs-var">glifo</span></a></span></span><span> </span><span id="local-6989586621679084839"><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679084839"><span class="hs-identifier hs-var">c</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">case</span><span> </span><span class="annot"><span class="annottext">Char -&gt; Char
+</span><span class="hs-identifier hs-var">toUpper</span></span><span> </span><span class="annot"><span class="annottext">Char
+</span><a href="#local-6989586621679084839"><span class="hs-identifier hs-var">c</span></a></span><span> </span><span class="hs-keyword">of</span><span>
+</span><span id="line-84"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'A'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-85"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'B'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-86"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'C'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-87"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'D'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-88"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'E'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-89"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'F'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-90"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'G'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.###&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-91"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'H'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-92"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'I'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-93"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'J'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..###&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-94"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'K'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;##...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-95"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'L'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-96"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'M'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;##.##&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-97"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'N'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;##..#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..##&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-98"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'O'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-99"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'P'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-100"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'Q'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##.#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-101"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'R'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-102"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'S'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-103"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'T'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-104"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'U'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-105"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'V'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#.#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-106"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'W'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;##.##&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-107"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'X'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#.#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#.#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-108"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'Y'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#.#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-109"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'Z'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-110"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..##&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#.#.#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;##..#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-111"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'1'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-112"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'2'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-113"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'3'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-114"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'4'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..##.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#.#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#..#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-115"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'5'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-116"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'6'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;####.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-117"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'7'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-118"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'8'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-119"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'9'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#...#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.####&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-120"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'!'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-121"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'-'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.###.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-122"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'.'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-123"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">':'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.##..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-124"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'&gt;'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;#....&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-125"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'&lt;'</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.#...&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;..#..&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;...#.&quot;</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;....#&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-126"></span><span>  </span><span class="annot"><span class="annottext">Char
+</span><span class="hs-identifier">_</span></span><span>   </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="annottext">Int -&gt; String -&gt; [String]
+forall a. Int -&gt; a -&gt; [a]
+</span><span class="hs-identifier hs-var">replicate</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">7</span></span><span> </span><span class="annot"><span class="annottext">String
+</span><span class="hs-string">&quot;.....&quot;</span></span><span>
+</span><span id="line-127"></span></pre></body></html>

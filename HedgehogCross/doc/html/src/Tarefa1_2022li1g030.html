@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="annot"><span class="hs-comment">{- |
+Module      : Tarefa1_2022li1g030
+Description : Valida&#231;&#227;o de um mapa
+Copyright   : Pedro
+
+M&#243;dulo para a realiza&#231;&#227;o da Tarefa 1 do projeto de LI1 em 2022/23.
+
+Um 'Mapa' &#233; v&#225;lido quando respeita, em simult&#226;neo, as sete restri&#231;&#245;es do
+enunciado. Cada restri&#231;&#227;o &#233; verificada por uma fun&#231;&#227;o pr&#243;pria, e a fun&#231;&#227;o
+'mapaValido' limita-se a exigir que todas se verifiquem.
+-}</span></span><span>
+</span><span id="line-12"></span><span class="hs-keyword">module</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html"><span class="hs-identifier">Tarefa1_2022li1g030</span></a></span><span> </span><span class="hs-special">(</span><span>
+</span><span id="line-13"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Fun&#231;&#227;o principal</span></span><span>
+</span><span id="line-14"></span><span>  </span><span class="annot"><a href="Tarefa1_2022li1g030.html#mapaValido"><span class="hs-identifier">mapaValido</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-15"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Restri&#231;&#245;es</span></span><span>
+</span><span id="line-16"></span><span>  </span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculosProprios"><span class="hs-identifier">obstaculosProprios</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#riosOpostos"><span class="hs-identifier">riosOpostos</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#comprimentosValidos"><span class="hs-identifier">comprimentosValidos</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#temEspacoLivre"><span class="hs-identifier">temEspacoLivre</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-17"></span><span>  </span><span class="annot"><a href="Tarefa1_2022li1g030.html#larguraCorreta"><span class="hs-identifier">larguraCorreta</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#terrenosContiguos"><span class="hs-identifier">terrenosContiguos</span></a></span><span class="hs-special">,</span><span>
+</span><span id="line-18"></span><span>  </span><span class="annot"><span class="hs-comment">-- * Fun&#231;&#245;es auxiliares</span></span><span>
+</span><span id="line-19"></span><span>  </span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier">obstaculoProprio</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#maiorSequencia"><span class="hs-identifier">maiorSequencia</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier">mesmoTipo</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteContiguo"><span class="hs-identifier">limiteContiguo</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier">limiteComprimento</span></a></span><span>
+</span><span id="line-20"></span><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-21"></span><span>
+</span><span id="line-22"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><span class="hs-identifier">Data.List</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">group</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">groupBy</span></span><span class="hs-special">)</span><span>
+</span><span id="line-23"></span><span class="hs-keyword">import</span><span> </span><span class="annot"><a href="LI12223.html"><span class="hs-identifier">LI12223</span></a></span><span>
+</span><span id="line-24"></span><span>
+</span><span id="line-25"></span><span class="annot"><span class="hs-comment">{- | Verifica se um mapa &#233; v&#225;lido, isto &#233;, se n&#227;o viola nenhuma das restri&#231;&#245;es:
+
+1. n&#227;o existem obst&#225;culos em terrenos impr&#243;prios ('obstaculosProprios');
+2. rios cont&#237;guos t&#234;m dire&#231;&#245;es opostas ('riosOpostos');
+3. troncos t&#234;m, no m&#225;ximo, 5 unidades de comprimento ('comprimentosValidos');
+4. carros t&#234;m, no m&#225;ximo, 3 unidades de comprimento ('comprimentosValidos');
+5. em qualquer linha existe, pelo menos, um espa&#231;o livre ('temEspacoLivre');
+6. o comprimento de cada linha &#233; igual &#224; largura do mapa ('larguraCorreta');
+7. n&#227;o existem mais do que 4 rios, nem 5 estradas ou relvas, seguidos
+   ('terrenosContiguos').
+
+&gt;&gt;&gt; mapaValido (Mapa 3 [(Relva, [Arvore, Nenhum, Arvore]), (Estrada 1, [Carro, Nenhum, Nenhum])])
+True
+&gt;&gt;&gt; mapaValido (Mapa 3 [(Relva, [Arvore, Arvore, Arvore])])
+False
+-}</span></span><span>
+</span><span id="line-41"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#mapaValido"><span class="hs-identifier hs-type">mapaValido</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-42"></span><span id="mapaValido"><span class="annot"><span class="annottext">mapaValido :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#mapaValido"><span class="hs-identifier hs-var hs-var">mapaValido</span></a></span></span><span> </span><span id="local-6989586621679085264"><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085264"><span class="hs-identifier hs-var">mapa</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Mapa -&gt; Bool) -&gt; Bool) -&gt; [Mapa -&gt; Bool] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Mapa -&gt; Bool) -&gt; Mapa -&gt; Bool
+forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Mapa
+</span><a href="#local-6989586621679085264"><span class="hs-identifier hs-var">mapa</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-43"></span><span>  </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#obstaculosProprios"><span class="hs-identifier hs-var">obstaculosProprios</span></a></span><span>
+</span><span id="line-44"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#riosOpostos"><span class="hs-identifier hs-var">riosOpostos</span></a></span><span>
+</span><span id="line-45"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#comprimentosValidos"><span class="hs-identifier hs-var">comprimentosValidos</span></a></span><span>
+</span><span id="line-46"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#temEspacoLivre"><span class="hs-identifier hs-var">temEspacoLivre</span></a></span><span>
+</span><span id="line-47"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#larguraCorreta"><span class="hs-identifier hs-var">larguraCorreta</span></a></span><span>
+</span><span id="line-48"></span><span>  </span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#terrenosContiguos"><span class="hs-identifier hs-var">terrenosContiguos</span></a></span><span>
+</span><span id="line-49"></span><span>  </span><span class="hs-special">]</span><span>
+</span><span id="line-50"></span><span>
+</span><span id="line-51"></span><span class="annot"><span class="hs-comment">-- | Restri&#231;&#227;o 1: todos os obst&#225;culos est&#227;o num terreno onde podem existir.</span></span><span>
+</span><span id="line-52"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculosProprios"><span class="hs-identifier hs-type">obstaculosProprios</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-53"></span><span id="obstaculosProprios"><span class="annot"><span class="annottext">obstaculosProprios :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#obstaculosProprios"><span class="hs-identifier hs-var hs-var">obstaculosProprios</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085266"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085266"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span>
+</span><span id="line-54"></span><span>  </span><span class="annot"><span class="annottext">[Bool] -&gt; Bool
+forall (t :: * -&gt; *). Foldable t =&gt; t Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">and</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">Terreno -&gt; Obstaculo -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var">obstaculoProprio</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085268"><span class="hs-identifier hs-var">terreno</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085269"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span class="hs-special">(</span><span id="local-6989586621679085268"><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085268"><span class="hs-identifier hs-var">terreno</span></a></span></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085270"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085270"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085266"><span class="hs-identifier hs-var">linhas</span></a></span><span class="hs-special">,</span><span> </span><span id="local-6989586621679085269"><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085269"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085270"><span class="hs-identifier hs-var">obstaculos</span></a></span><span> </span><span class="hs-special">]</span><span>
+</span><span id="line-55"></span><span>
+</span><span id="line-56"></span><span class="annot"><span class="hs-comment">{- | Indica se um obst&#225;culo pode existir num dado terreno: troncos apenas em
+rios, carros apenas em estradas e &#225;rvores apenas na relva. 'Nenhum' &#233;
+admiss&#237;vel em qualquer terreno.
+-}</span></span><span>
+</span><span id="line-60"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-type">obstaculoProprio</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-61"></span><span id="obstaculoProprio"><span class="annot"><span class="annottext">obstaculoProprio :: Terreno -&gt; Obstaculo -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var hs-var">obstaculoProprio</span></a></span></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>           </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Nenhum"><span class="hs-identifier hs-var">Nenhum</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-62"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var">obstaculoProprio</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span>     </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Tronco"><span class="hs-identifier hs-var">Tronco</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-63"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var">obstaculoProprio</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Estrada"><span class="hs-identifier hs-type">Estrada</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Carro"><span class="hs-identifier hs-var">Carro</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-64"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var">obstaculoProprio</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><a href="LI12223.html#Relva"><span class="hs-identifier hs-var">Relva</span></a></span><span>       </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Arvore"><span class="hs-identifier hs-var">Arvore</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-65"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#obstaculoProprio"><span class="hs-identifier hs-var">obstaculoProprio</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>           </span><span class="annot"><span class="annottext">Obstaculo
+</span><span class="hs-identifier">_</span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><span class="hs-comment">{- | Restri&#231;&#227;o 2: dois rios seguidos nunca correm no mesmo sentido.
+
+Um rio com velocidade 0 n&#227;o tem sentido definido, pelo que nunca entra em
+conflito com os rios vizinhos.
+-}</span></span><span>
+</span><span id="line-72"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#riosOpostos"><span class="hs-identifier hs-type">riosOpostos</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-73"></span><span id="riosOpostos"><span class="annot"><span class="annottext">riosOpostos :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#riosOpostos"><span class="hs-identifier hs-var hs-var">riosOpostos</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085278"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085278"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Bool] -&gt; Bool
+forall (t :: * -&gt; *). Foldable t =&gt; t Bool -&gt; Bool
+</span><span class="hs-identifier hs-var">and</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Terreno -&gt; Terreno -&gt; Bool) -&gt; [Terreno] -&gt; [Terreno] -&gt; [Bool]
+forall a b c. (a -&gt; b -&gt; c) -&gt; [a] -&gt; [b] -&gt; [c]
+</span><span class="hs-identifier hs-var">zipWith</span></span><span> </span><span class="annot"><span class="annottext">Terreno -&gt; Terreno -&gt; Bool
+</span><a href="#local-6989586621679085280"><span class="hs-identifier hs-var">opostos</span></a></span><span> </span><span class="annot"><span class="annottext">[Terreno]
+</span><a href="#local-6989586621679085281"><span class="hs-identifier hs-var">terrenos</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Largura -&gt; [Terreno] -&gt; [Terreno]
+forall a. Largura -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">drop</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">1</span></span><span> </span><span class="annot"><span class="annottext">[Terreno]
+</span><a href="#local-6989586621679085281"><span class="hs-identifier hs-var">terrenos</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-74"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-75"></span><span>    </span><span id="local-6989586621679085281"><span class="annot"><span class="annottext">terrenos :: [Terreno]
+</span><a href="#local-6989586621679085281"><span class="hs-identifier hs-var hs-var">terrenos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Terreno, [Obstaculo]) -&gt; Terreno)
+-&gt; [(Terreno, [Obstaculo])] -&gt; [Terreno]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, [Obstaculo]) -&gt; Terreno
+forall a b. (a, b) -&gt; a
+</span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085278"><span class="hs-identifier hs-var">linhas</span></a></span><span>
+</span><span id="line-76"></span><span>    </span><span id="local-6989586621679085280"><span class="annot"><span class="annottext">opostos :: Terreno -&gt; Terreno -&gt; Bool
+</span><a href="#local-6989586621679085280"><span class="hs-identifier hs-var hs-var">opostos</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span id="local-6989586621679085289"><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085289"><span class="hs-identifier hs-var">v1</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span id="local-6989586621679085290"><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085290"><span class="hs-identifier hs-var">v2</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">signum</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085289"><span class="hs-identifier hs-var">v1</span></a></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura -&gt; Largura
+forall a. Num a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">*</span></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura
+forall a. Num a =&gt; a -&gt; a
+</span><span class="hs-identifier hs-var">signum</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085290"><span class="hs-identifier hs-var">v2</span></a></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">/=</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">1</span></span><span>
+</span><span id="line-77"></span><span>    </span><span class="annot"><a href="#local-6989586621679085280"><span class="hs-identifier hs-var">opostos</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>        </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>        </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-78"></span><span>
+</span><span id="line-79"></span><span class="annot"><span class="hs-comment">{- | Restri&#231;&#245;es 3 e 4: nenhum tronco tem mais de 5 unidades e nenhum carro tem
+mais de 3 unidades.
+
+Como os obst&#225;culos que saem por um lado do mapa reaparecem no lado oposto, a
+linha &#233; tratada como circular: um tronco que termina no fim da linha continua
+no in&#237;cio da mesma. Para isso mede-se a maior sequ&#234;ncia na linha concatenada
+consigo pr&#243;pria.
+-}</span></span><span>
+</span><span id="line-87"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#comprimentosValidos"><span class="hs-identifier hs-type">comprimentosValidos</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-88"></span><span id="comprimentosValidos"><span class="annot"><span class="annottext">comprimentosValidos :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#comprimentosValidos"><span class="hs-identifier hs-var hs-var">comprimentosValidos</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085294"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085294"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Terreno, [Obstaculo]) -&gt; Bool)
+-&gt; [(Terreno, [Obstaculo])] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Obstaculo] -&gt; Bool
+</span><a href="#local-6989586621679085295"><span class="hs-identifier hs-var">linhaOk</span></a></span><span> </span><span class="annot"><span class="annottext">([Obstaculo] -&gt; Bool)
+-&gt; ((Terreno, [Obstaculo]) -&gt; [Obstaculo])
+-&gt; (Terreno, [Obstaculo])
+-&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, [Obstaculo]) -&gt; [Obstaculo]
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085294"><span class="hs-identifier hs-var">linhas</span></a></span><span>
+</span><span id="line-89"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-90"></span><span>    </span><span id="local-6989586621679085295"><span class="annot"><span class="annottext">linhaOk :: [Obstaculo] -&gt; Bool
+</span><a href="#local-6989586621679085295"><span class="hs-identifier hs-var hs-var">linhaOk</span></a></span></span><span> </span><span id="local-6989586621679085299"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085299"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Obstaculo -&gt; Bool) -&gt; [Obstaculo] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Obstaculo] -&gt; Obstaculo -&gt; Bool
+</span><a href="#local-6989586621679085300"><span class="hs-identifier hs-var">dentroDoLimite</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085299"><span class="hs-identifier hs-var">obstaculos</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; [Obstaculo] -&gt; [Obstaculo]
+forall a. [a] -&gt; [a] -&gt; [a]
+</span><span class="hs-operator hs-var">++</span></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085299"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Tronco"><span class="hs-identifier hs-var">Tronco</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Carro"><span class="hs-identifier hs-var">Carro</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-91"></span><span>    </span><span id="local-6989586621679085300"><span class="annot"><span class="annottext">dentroDoLimite :: [Obstaculo] -&gt; Obstaculo -&gt; Bool
+</span><a href="#local-6989586621679085300"><span class="hs-identifier hs-var hs-var">dentroDoLimite</span></a></span></span><span> </span><span id="local-6989586621679085302"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085302"><span class="hs-identifier hs-var">circular</span></a></span></span><span> </span><span id="local-6989586621679085303"><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085303"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool -&gt; (Largura -&gt; Bool) -&gt; Maybe Largura -&gt; Bool
+forall b a. b -&gt; (a -&gt; b) -&gt; Maybe a -&gt; b
+</span><span class="hs-identifier hs-var">maybe</span></span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Obstaculo -&gt; [Obstaculo] -&gt; Largura
+</span><a href="Tarefa1_2022li1g030.html#maiorSequencia"><span class="hs-identifier hs-var">maiorSequencia</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085303"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085302"><span class="hs-identifier hs-var">circular</span></a></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Obstaculo -&gt; Maybe Largura
+</span><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier hs-var">limiteComprimento</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085303"><span class="hs-identifier hs-var">o</span></a></span><span class="hs-special">)</span><span>
+</span><span id="line-92"></span><span>
+</span><span id="line-93"></span><span class="annot"><span class="hs-comment">-- | Comprimento m&#225;ximo de um obst&#225;culo, caso exista: 5 para troncos e 3 para carros.</span></span><span>
+</span><span id="line-94"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier hs-type">limiteComprimento</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-95"></span><span id="limiteComprimento"><span class="annot"><span class="annottext">limiteComprimento :: Obstaculo -&gt; Maybe Largura
+</span><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier hs-var hs-var">limiteComprimento</span></a></span></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Tronco"><span class="hs-identifier hs-var">Tronco</span></a></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Maybe Largura
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">5</span></span><span>
+</span><span id="line-96"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier hs-var">limiteComprimento</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Carro"><span class="hs-identifier hs-var">Carro</span></a></span><span>  </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Maybe Largura
+forall a. a -&gt; Maybe a
+</span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">3</span></span><span>
+</span><span id="line-97"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteComprimento"><span class="hs-identifier hs-var">limiteComprimento</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><span class="hs-identifier">_</span></span><span>      </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Maybe Largura
+forall a. Maybe a
+</span><span class="hs-identifier hs-var">Nothing</span></span><span>
+</span><span id="line-98"></span><span>
+</span><span id="line-99"></span><span class="annot"><span class="hs-comment">{- | Comprimento da maior sequ&#234;ncia de um dado obst&#225;culo numa lista.
+
+&gt;&gt;&gt; maiorSequencia Tronco [Tronco, Nenhum, Tronco, Tronco]
+2
+-}</span></span><span>
+</span><span id="line-104"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#maiorSequencia"><span class="hs-identifier hs-type">maiorSequencia</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="hs-special">[</span><span class="annot"><a href="LI12223.html#Obstaculo"><span class="hs-identifier hs-type">Obstaculo</span></a></span><span class="hs-special">]</span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-105"></span><span id="maiorSequencia"><span class="annot"><span class="annottext">maiorSequencia :: Obstaculo -&gt; [Obstaculo] -&gt; Largura
+</span><a href="Tarefa1_2022li1g030.html#maiorSequencia"><span class="hs-identifier hs-var hs-var">maiorSequencia</span></a></span></span><span> </span><span id="local-6989586621679085306"><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085306"><span class="hs-identifier hs-var">o</span></a></span></span><span> </span><span id="local-6989586621679085307"><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085307"><span class="hs-identifier hs-var">obstaculos</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Largura] -&gt; Largura
+forall a. Ord a =&gt; [a] -&gt; a
+forall (t :: * -&gt; *) a. (Foldable t, Ord a) =&gt; t a -&gt; a
+</span><span class="hs-identifier hs-var">maximum</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">0</span></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; [Largura] -&gt; [Largura]
+forall a. a -&gt; [a] -&gt; [a]
+</span><span class="hs-glyph hs-var">:</span></span><span> </span><span class="hs-special">[</span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; Largura
+forall a. [a] -&gt; Largura
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Largura
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085310"><span class="hs-identifier hs-var">g</span></a></span><span> </span><span class="hs-glyph">|</span><span> </span><span id="local-6989586621679085310"><span class="annot"><span class="annottext">g :: [Obstaculo]
+</span><a href="#local-6989586621679085310"><span class="hs-identifier hs-var">g</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span id="local-6989586621679085311"><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085311"><span class="hs-identifier hs-var">x</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[Obstaculo]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; [[Obstaculo]]
+forall a. Eq a =&gt; [a] -&gt; [[a]]
+</span><span class="hs-identifier hs-var">group</span></span><span> </span><span class="annot"><span class="annottext">[Obstaculo]
+</span><a href="#local-6989586621679085307"><span class="hs-identifier hs-var">obstaculos</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085311"><span class="hs-identifier hs-var">x</span></a></span><span> </span><span class="annot"><span class="annottext">Obstaculo -&gt; Obstaculo -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="#local-6989586621679085306"><span class="hs-identifier hs-var">o</span></a></span><span> </span><span class="hs-special">]</span><span class="hs-special">)</span><span>
+</span><span id="line-106"></span><span>
+</span><span id="line-107"></span><span class="annot"><span class="hs-comment">-- | Restri&#231;&#227;o 5: todas as linhas t&#234;m, pelo menos, um espa&#231;o livre ('Nenhum').</span></span><span>
+</span><span id="line-108"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#temEspacoLivre"><span class="hs-identifier hs-type">temEspacoLivre</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-109"></span><span id="temEspacoLivre"><span class="annot"><span class="annottext">temEspacoLivre :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#temEspacoLivre"><span class="hs-identifier hs-var hs-var">temEspacoLivre</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085312"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085312"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Terreno, [Obstaculo]) -&gt; Bool)
+-&gt; [(Terreno, [Obstaculo])] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Obstaculo -&gt; [Obstaculo] -&gt; Bool
+forall a. Eq a =&gt; a -&gt; [a] -&gt; Bool
+forall (t :: * -&gt; *) a. (Foldable t, Eq a) =&gt; a -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">elem</span></span><span> </span><span class="annot"><span class="annottext">Obstaculo
+</span><a href="LI12223.html#Nenhum"><span class="hs-identifier hs-var">Nenhum</span></a></span><span> </span><span class="annot"><span class="annottext">([Obstaculo] -&gt; Bool)
+-&gt; ((Terreno, [Obstaculo]) -&gt; [Obstaculo])
+-&gt; (Terreno, [Obstaculo])
+-&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, [Obstaculo]) -&gt; [Obstaculo]
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085312"><span class="hs-identifier hs-var">linhas</span></a></span><span>
+</span><span id="line-110"></span><span>
+</span><span id="line-111"></span><span class="annot"><span class="hs-comment">-- | Restri&#231;&#227;o 6: todas as linhas t&#234;m exatamente a largura do mapa.</span></span><span>
+</span><span id="line-112"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#larguraCorreta"><span class="hs-identifier hs-type">larguraCorreta</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-113"></span><span id="larguraCorreta"><span class="annot"><span class="annottext">larguraCorreta :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#larguraCorreta"><span class="hs-identifier hs-var hs-var">larguraCorreta</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span id="local-6989586621679085314"><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085314"><span class="hs-identifier hs-var">largura</span></a></span></span><span> </span><span id="local-6989586621679085315"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085315"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">((Terreno, [Obstaculo]) -&gt; Bool)
+-&gt; [(Terreno, [Obstaculo])] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">(</span><span class="annot"><span class="annottext">Largura -&gt; Largura -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><a href="#local-6989586621679085314"><span class="hs-identifier hs-var">largura</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">(Largura -&gt; Bool)
+-&gt; ((Terreno, [Obstaculo]) -&gt; Largura)
+-&gt; (Terreno, [Obstaculo])
+-&gt; Bool
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">[Obstaculo] -&gt; Largura
+forall a. [a] -&gt; Largura
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Largura
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">([Obstaculo] -&gt; Largura)
+-&gt; ((Terreno, [Obstaculo]) -&gt; [Obstaculo])
+-&gt; (Terreno, [Obstaculo])
+-&gt; Largura
+forall b c a. (b -&gt; c) -&gt; (a -&gt; b) -&gt; a -&gt; c
+</span><span class="hs-operator hs-var">.</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, [Obstaculo]) -&gt; [Obstaculo]
+forall a b. (a, b) -&gt; b
+</span><span class="hs-identifier hs-var">snd</span></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085315"><span class="hs-identifier hs-var">linhas</span></a></span><span>
+</span><span id="line-114"></span><span>
+</span><span id="line-115"></span><span class="annot"><span class="hs-comment">-- | Restri&#231;&#227;o 7: n&#227;o h&#225; mais do que 4 rios, nem 5 estradas ou relvas, seguidos.</span></span><span>
+</span><span id="line-116"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#terrenosContiguos"><span class="hs-identifier hs-type">terrenosContiguos</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-117"></span><span id="terrenosContiguos"><span class="annot"><span class="annottext">terrenosContiguos :: Mapa -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#terrenosContiguos"><span class="hs-identifier hs-var hs-var">terrenosContiguos</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Mapa"><span class="hs-identifier hs-type">Mapa</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span> </span><span id="local-6989586621679085316"><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085316"><span class="hs-identifier hs-var">linhas</span></a></span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">([Terreno] -&gt; Bool) -&gt; [[Terreno]] -&gt; Bool
+forall (t :: * -&gt; *) a. Foldable t =&gt; (a -&gt; Bool) -&gt; t a -&gt; Bool
+</span><span class="hs-identifier hs-var">all</span></span><span> </span><span class="annot"><span class="annottext">[Terreno] -&gt; Bool
+</span><a href="#local-6989586621679085317"><span class="hs-identifier hs-var">grupoOk</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">(Terreno -&gt; Terreno -&gt; Bool) -&gt; [Terreno] -&gt; [[Terreno]]
+forall a. (a -&gt; a -&gt; Bool) -&gt; [a] -&gt; [[a]]
+</span><span class="hs-identifier hs-var">groupBy</span></span><span> </span><span class="annot"><span class="annottext">Terreno -&gt; Terreno -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-var">mesmoTipo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">((Terreno, [Obstaculo]) -&gt; Terreno)
+-&gt; [(Terreno, [Obstaculo])] -&gt; [Terreno]
+forall a b. (a -&gt; b) -&gt; [a] -&gt; [b]
+</span><span class="hs-identifier hs-var">map</span></span><span> </span><span class="annot"><span class="annottext">(Terreno, [Obstaculo]) -&gt; Terreno
+forall a b. (a, b) -&gt; a
+</span><span class="hs-identifier hs-var">fst</span></span><span> </span><span class="annot"><span class="annottext">[(Terreno, [Obstaculo])]
+</span><a href="#local-6989586621679085316"><span class="hs-identifier hs-var">linhas</span></a></span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-118"></span><span>  </span><span class="hs-keyword">where</span><span>
+</span><span id="line-119"></span><span>    </span><span id="local-6989586621679085317"><span class="annot"><span class="annottext">grupoOk :: [Terreno] -&gt; Bool
+</span><a href="#local-6989586621679085317"><span class="hs-identifier hs-var hs-var">grupoOk</span></a></span></span><span> </span><span id="local-6989586621679085320"><span class="annot"><span class="annottext">grupo :: [Terreno]
+</span><a href="#local-6989586621679085320"><span class="hs-identifier hs-var">grupo</span></a></span></span><span class="hs-glyph">@</span><span class="hs-special">(</span><span id="local-6989586621679085321"><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085321"><span class="hs-identifier hs-var">t</span></a></span></span><span class="annot"><span class="hs-glyph hs-type">:</span></span><span class="annot"><span class="annottext">[Terreno]
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Terreno] -&gt; Largura
+forall a. [a] -&gt; Largura
+forall (t :: * -&gt; *) a. Foldable t =&gt; t a -&gt; Largura
+</span><span class="hs-identifier hs-var">length</span></span><span> </span><span class="annot"><span class="annottext">[Terreno]
+</span><a href="#local-6989586621679085320"><span class="hs-identifier hs-var">grupo</span></a></span><span> </span><span class="annot"><span class="annottext">Largura -&gt; Largura -&gt; Bool
+forall a. Ord a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-operator hs-var">&lt;=</span></span><span> </span><span class="annot"><span class="annottext">Terreno -&gt; Largura
+</span><a href="Tarefa1_2022li1g030.html#limiteContiguo"><span class="hs-identifier hs-var">limiteContiguo</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><a href="#local-6989586621679085321"><span class="hs-identifier hs-var">t</span></a></span><span>
+</span><span id="line-120"></span><span>    </span><span class="annot"><a href="#local-6989586621679085317"><span class="hs-identifier hs-var">grupoOk</span></a></span><span> </span><span class="hs-special">[</span><span class="hs-special">]</span><span>          </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-121"></span><span>
+</span><span id="line-122"></span><span class="annot"><span class="hs-comment">-- | Indica se dois terrenos s&#227;o do mesmo tipo, ignorando a velocidade.</span></span><span>
+</span><span id="line-123"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-type">mesmoTipo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Bool</span></span><span>
+</span><span id="line-124"></span><span id="mesmoTipo"><span class="annot"><span class="annottext">mesmoTipo :: Terreno -&gt; Terreno -&gt; Bool
+</span><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-var hs-var">mesmoTipo</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span>     </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span>     </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-125"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-var">mesmoTipo</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Estrada"><span class="hs-identifier hs-type">Estrada</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Estrada"><span class="hs-identifier hs-type">Estrada</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-126"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-var">mesmoTipo</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><a href="LI12223.html#Relva"><span class="hs-identifier hs-var">Relva</span></a></span><span>       </span><span class="annot"><span class="annottext">Terreno
+</span><a href="LI12223.html#Relva"><span class="hs-identifier hs-var">Relva</span></a></span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">True</span></span><span>
+</span><span id="line-127"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#mesmoTipo"><span class="hs-identifier hs-var">mesmoTipo</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>           </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>           </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Bool
+</span><span class="hs-identifier hs-var">False</span></span><span>
+</span><span id="line-128"></span><span>
+</span><span id="line-129"></span><span class="annot"><span class="hs-comment">-- | N&#250;mero m&#225;ximo de linhas seguidas de um tipo de terreno: 4 rios, 5 estradas ou 5 relvas.</span></span><span>
+</span><span id="line-130"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteContiguo"><span class="hs-identifier hs-type">limiteContiguo</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><a href="LI12223.html#Terreno"><span class="hs-identifier hs-type">Terreno</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Int</span></span><span>
+</span><span id="line-131"></span><span id="limiteContiguo"><span class="annot"><span class="annottext">limiteContiguo :: Terreno -&gt; Largura
+</span><a href="Tarefa1_2022li1g030.html#limiteContiguo"><span class="hs-identifier hs-var hs-var">limiteContiguo</span></a></span></span><span> </span><span class="hs-special">(</span><span class="annot"><a href="LI12223.html#Rio"><span class="hs-identifier hs-type">Rio</span></a></span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-identifier">_</span></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">4</span></span><span>
+</span><span id="line-132"></span><span class="annot"><a href="Tarefa1_2022li1g030.html#limiteContiguo"><span class="hs-identifier hs-var">limiteContiguo</span></a></span><span> </span><span class="annot"><span class="annottext">Terreno
+</span><span class="hs-identifier">_</span></span><span>       </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Largura
+</span><span class="hs-number">5</span></span><span>
+</span><span id="line-133"></span></pre></body></html>

@@ -1,0 +1,65 @@
+cabal-version:      2.4
+name:               crossyroad
+version:            1.0.0.0
+synopsis:           Jogo de atravessar estradas e rios, em Haskell e Gloss
+description:
+  Projeto de Laboratórios de Informática I (2022/23): um jogo em que se
+  controla um ouriço ao longo de um mapa infinito de relva, estradas e rios.
+
+author:             Sk1W4lker
+maintainer:         trainplaygames@gmail.com
+category:           Game
+build-type:         Simple
+extra-doc-files:    README.md
+                    CHANGELOG.md
+
+common opcoes
+  default-language: Haskell2010
+  ghc-options:      -Wall
+  build-depends:    base >=4.14 && <5
+
+library
+  import:           opcoes
+  hs-source-dirs:   src
+  exposed-modules:
+    LI12223
+    Tarefa1_2022li1g030
+    Tarefa2_2022li1g030
+    Tarefa3_2022li1g030
+    Tarefa4_2022li1g030
+    Tarefa5_2022li1g030
+    Tarefa6_2022li1g030
+    Fonte
+    Desenho
+  build-depends:
+    random,
+    gloss
+
+executable crossyroad
+  import:           opcoes
+  hs-source-dirs:   app
+  main-is:          Main.hs
+  ghc-options:      -threaded
+  build-depends:
+    crossyroad,
+    random,
+    gloss,
+    directory
+
+test-suite crossyroad-tests
+  import:           opcoes
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   tests
+  main-is:          Spec.hs
+  other-modules:
+    Tarefa1_2022li1g030_Spec
+    Tarefa2_2022li1g030_Spec
+    Tarefa3_2022li1g030_Spec
+    Tarefa4_2022li1g030_Spec
+    Tarefa5_2022li1g030_Spec
+    Tarefa6_2022li1g030_Spec
+  build-depends:
+    crossyroad,
+    HUnit,
+    random,
+    gloss
